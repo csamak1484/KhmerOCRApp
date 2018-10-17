@@ -1,0 +1,7 @@
+{
+  "name": "cropImage",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "ionic-angular"
+}
