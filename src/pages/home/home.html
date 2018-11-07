@@ -1,14 +1,150 @@
 <ion-header>
-  <ion-navbar>
-    <ion-title>
-      Ionic Blank
-    </ion-title>
+  <ion-navbar hideBackButton  color="purple">
+    <ion-title  *ngIf="!myImage" style="vertical-align: sub;">Khmer OCR</ion-title>
+        <ion-title  *ngIf="myImage && !croppedImage">Edit Image</ion-title>
+        <ion-title  *ngIf="croppedImage && !isRecognized">Cropped Image</ion-title>
+        <ion-title  *ngIf="isRecognized  && isRecognized">OCR-output text</ion-title>
+        <ion-buttons end>
+          <button ion-button outline clear color="light" end (click)="infoButton()">
+            <ion-icon name="alert" md="md-alert" style="font-size: 25px;"></ion-icon>
+          </button>
+        </ion-buttons>
   </ion-navbar>
+
 </ion-header>
 
-<ion-content padding>
-  The world is your oyster.
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will be your guide.
-  </p>
+<ion-content>
+  <ion-card>
+    <div class="labelToInputImage" *ngIf="!myImage">
+      <h3 class="lineSpace">{{textDisplay}}</h3>
+    </div>
+  </ion-card>
+
+  <ion-card *ngIf="croppedImage && isRecognized && !isResultNull">
+    <ion-card-content>
+      <h3>{{textDisplay}}</h3>
+    </ion-card-content>
+  </ion-card>
+  <ion-icon name="arrow-round-up" md="md-arrow-round-up" style="font-size: 50px; text-align: center;" color="purple" class="iconOutput"  *ngIf="!isResultNull && isRecognized"></ion-icon>
+  <angular-cropper #angularCropper [cropperOptions]="cropperOptions" [imageUrl]="myImage" *ngIf="myImage && !croppedImage" style="margin: 0px;"></angular-cropper>
+
+  <ion-card *ngIf="croppedImage">
+    <ion-card-content>
+      <img [src]="croppedImage">
+    </ion-card-content>
+  </ion-card>
+
+  
+
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar color="purple">
+      <ion-row *ngIf="!myImage">
+          <ion-col width-10 style="text-align: center">
+              
+          </ion-col>
+
+          <ion-col width-10 style="text-align: center">
+            <button ion-button outline round start (click)="captureImage()" color="light" *ngIf="!myImage">
+              <ion-icon name="camera" md="md-camera" style="font-size: 25px;"></ion-icon>
+            </button>
+          </ion-col>
+    
+          <ion-col width-10 style="text-align: right">
+            <button class="button" clear ion-button (click)="openImagePicker()" color="light" *ngIf="!myImage">
+              <ion-icon name="images" md="md-images" style="font-size: 25px;"></ion-icon>
+            </button>
+          </ion-col>
+      </ion-row>
+
+    <ion-row  *ngIf="myImage && !editImage">
+      <ion-col width-10 style="text-align: center">
+          <button class="button" clear ion-button (click)="setImageNull()" color="light">
+              <ion-icon name="trash" md="ios-trash" style="font-size: 25px;"></ion-icon>
+          </button>
+      </ion-col>
+
+      <ion-col width-10 style="text-align: center">
+        <button ion-button clear icon-only color="light" (click)="zoom(true)"  *ngIf="myImage">
+          <ion-icon name="add" md="md-add" style="font-size: 25px;"></ion-icon>
+        </button>
+      </ion-col>
+
+      <ion-col width-10 style="text-align: center;">
+        <button *ngIf="myImage" class="button" ion-button clear (click)="reset()" color="light">
+          RESET
+        </button>
+      </ion-col>
+
+      <ion-col width-10 style="text-align: center">
+        <button ion-button clear icon-only color="light" (click)="zoom(false)"  *ngIf="myImage">
+          <ion-icon name="remove" md="md-remove" style="font-size: 25px;"></ion-icon>
+        </button>
+      </ion-col>
+
+      <ion-col width-10 style="text-align: center">
+        <button class="button" clear ion-button (click)="save()" color="light" *ngIf="myImage">
+          <ion-icon name="checkmark-circle-outline" md="md-checkmark-circle-outline" style="font-size: 25px;"></ion-icon>
+        </button>
+      </ion-col>
+
+    </ion-row>
+
+    <ion-row  *ngIf="myImage && !editImage">
+      <ion-col width-8 style="text-align: center;">
+        <button ion-button clear icon-only (click)="move(0, -10)"   color="light">
+          <ion-icon name="arrow-round-up" style="font-size: 25px;"></ion-icon>
+        </button>
+      </ion-col>
+
+      <ion-col width-8 style="text-align: center;">
+        <button ion-button clear icon-only (click)="move(0, 10)"   color="light">
+          <ion-icon name="arrow-round-down" style="font-size: 25px;"></ion-icon>
+        </button>
+      </ion-col>
+
+      <ion-col width-8 style="text-align: center;" >
+        <button ion-button clear icon-only (click)="rotate()"   color="light">
+          <ion-icon name="refresh" md="md-refresh" style="font-size: 25px;"></ion-icon>
+        </button>
+      </ion-col>
+
+      <ion-col width-8 style="text-align: center;" >
+        <button ion-button clear icon-only (click)="move(-10, 0)"   color="light">
+          <ion-icon name="arrow-round-back"  style="font-size: 25px;"></ion-icon>
+        </button>
+      </ion-col>
+      <ion-col width-8 style="text-align: center;" >
+        <button ion-button clear icon-only (click)="move(10, 0)"   color="light">
+          <ion-icon name="arrow-round-forward"  style="font-size: 25px;"></ion-icon>
+        </button>
+      </ion-col> 
+    </ion-row>
+
+    <ion-row *ngIf="editImage">
+        <ion-col width-10 style="text-align: left">
+            <button class="button" clear ion-button (click)="setImageNull()" color="light">
+                <ion-icon name="trash" md="ios-trash" style="font-size: 25px;"></ion-icon>
+              </button>
+        </ion-col>
+
+        <ion-col width-10 style="text-align: center">
+          <button ion-button outline round start (click)="generateKhmreocr()" color="light" *ngIf="!isResultNull && !isRecognized">
+            OCR
+          </button>
+          <button ion-button outline round start  color="light" (click)="shareSheetShare()" *ngIf="!isResultNull && isRecognized">
+            <ion-icon name="share" md="md-share" style="font-size: 25px;"></ion-icon>
+          </button>
+        </ion-col>
+  
+        <ion-col width-10 style="text-align: right">
+          <button class="button" clear ion-button (click)="setEditImage()" color="light">
+            <ion-icon name="crop" md="md-crop" style="font-size: 25px;"></ion-icon>
+          </button>
+        </ion-col>
+
+    </ion-row>
+
+  </ion-toolbar>
+</ion-footer>
