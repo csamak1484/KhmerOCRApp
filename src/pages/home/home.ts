@@ -31,6 +31,7 @@ export class HomePage {
   editImage: boolean = false;
   isRecognized: boolean = false;
   isResultNull: boolean = false;
+  loading: any;
  
   constructor(public navCtrl: NavController, 
     private camera: Camera, 
@@ -59,6 +60,7 @@ export class HomePage {
   }
  
   captureImage() {
+    this.presentLoadingNoDismiss('Loading photo...');
     this.myImage = "";
     const options: CameraOptions = {
       quality: 100,
@@ -70,7 +72,7 @@ export class HomePage {
  
     this.camera.getPicture(options).then((imageData) => {
       this.myImage = 'data:image/jpeg;base64,' + imageData;
-      console.log(imageData);
+      this.dismissLoading();
     });
   }
 
@@ -79,34 +81,15 @@ export class HomePage {
     let options = {
       maximumImagesCount: 1,
     }
-
-  /*   const options: CameraOptions = {
-      maximumImagesCount: 1,
-      quality: 100,
-      destinationType: this.camera.DestinationType.DATA_URL,
-      encodingType: this.camera.EncodingType.JPEG,
-      mediaType: this.camera.MediaType.PICTURE,
-      sourceType: this.camera.PictureSourceType.SAVEDPHOTOALBUM
-      
-    } */
-
-    // this.photos = new Array<string>();
+    this.presentLoadingNoDismiss('Loading photo...');
     this.imagePicker.getPictures(options)
       .then((results) => {
-        //this.myImage = 'data:image/jpeg;base64,' + results;
-        console.log('results = ');
-        console.log(results);
         this.base64.encodeFile(results[0]).then((base64File: string) => {
-          console.log('base64File = ');
-          console.log(base64File);
-          // this.myImage = 'data:image/jpeg;base64,' + base64File;
-          // this.myImage = base64File;
           this.myImage = this.sanitizer.bypassSecurityTrustUrl(base64File);
-
+          this.dismissLoading();
         }, (err) => {
           console.log(err);
         });
-        //this.myImage = this.sanitizer.bypassSecurityTrustUrl(results);
       }, (err) => { console.log(err) });
   }
  
@@ -142,9 +125,12 @@ export class HomePage {
   }
  
   save() {
+    this.presentLoadingNoDismiss('Cropping image...');
     let croppedImgB64String: string = this.angularCropper.cropper.getCroppedCanvas().toDataURL('image/jpeg', (100 / 100));
     this.croppedImage = croppedImgB64String;
     this.editImage = true;
+    if(this.croppedImage != null)
+      this.dismissLoading();
     
     // this.generateKhmreocr();
 
@@ -165,8 +151,7 @@ export class HomePage {
   }
 
   generateKhmreocr() {
-    this.textDisplay ="";
-    this.isRecognized = true;
+    
     var json_base64_data = [
       {
         "photo": this.croppedImage
@@ -182,27 +167,25 @@ export class HomePage {
       console.log(json_base64_data);
       if(this.network.type != "none")
       {
-        this.presentLoadingCustom(3000,'OCR is being generated...');
+        //this.presentLoadingCustom(3000,'OCR is being generated...');
+        this.presentLoadingNoDismiss('OCR is being generated...');
         this.http.post('http://khmerocr.open.org.kh/api/ocr_image_to_text', json_base64_data, { headers: this.header })
           .subscribe(res => {
           
             let result_text = res["_body"];
-            console.log('result = ');
-            console.log(result_text);
             let parse_result = JSON.parse(result_text);
-            
             if(parse_result.ocr_generated_text == null || parse_result.ocr_generated_text == " \n\f" || parse_result.ocr_generated_text == "" || parse_result.ocr_generated_text == " \n"  || parse_result.ocr_generated_text == "\f" )
             {
               this.presentToast("Cannot recognize your input image.");
-              this.textDisplay = "";
+              this.textDisplay = "Cannot recognize your input image.";
               this.isResultNull = true;
             } else {
               this.textDisplay = parse_result.ocr_generated_text;
               this.isResultNull = false;
-              console.log('isRecognize ='+this.isRecognized);
-              console.log('isResultNull ='+this.isResultNull);
             }
-            console.log(this.textDisplay);
+            // this.textDisplay ="";
+            this.isRecognized = true;
+            this.dismissLoading();
             resolve(res);
           }, err => {
             console.log('Error while recognizing Khmer OCR: ' + JSON.stringify(err));
@@ -232,6 +215,28 @@ export class HomePage {
       });
 
       loading.present();
+    }
+
+    // * Function to show loading dialog * //
+     // * Param1: duriationTime => how long to show the msg (milli-sec)* //
+     // * Param2: str => text msg to be shown * //
+     presentLoadingNoDismiss(str: string) {
+      this.loading = this.loadingCtrl.create({
+        content: `
+          <div class="custom-spinner-container">
+            <div class="custom-spinner-box"> `+ str +` </div>
+          </div>`,
+          showBackdrop: true
+      });
+
+      this.loading.present();
+    }
+
+    dismissLoading(){
+      this.loading.dismiss();
+      /* this.loading.onDidDismiss(() => {
+        console.log('Dismissed loading');
+      }); */
     }
 
      // * Function to show simple dialog * //
