@@ -139,7 +139,8 @@ export class HomePage {
   setEditImage(){
     this.editImage = false;
     this.croppedImage = "";
-    this.isRecognized =false;
+    this.isRecognized = false;
+    this.isResultNull = false;
   }
 
   setImageNull(){
@@ -174,17 +175,20 @@ export class HomePage {
           
             let result_text = res["_body"];
             let parse_result = JSON.parse(result_text);
+            console.log('OCR output= '+parse_result.ocr_generated_text);
             if(parse_result.ocr_generated_text == null || parse_result.ocr_generated_text == " \n\f" || parse_result.ocr_generated_text == "" || parse_result.ocr_generated_text == " \n"  || parse_result.ocr_generated_text == "\f" )
             {
               this.presentToast("Cannot recognize your input image.");
               this.textDisplay = "Cannot recognize your input image.";
               this.isResultNull = true;
+              this.isRecognized = true;
             } else {
               this.textDisplay = parse_result.ocr_generated_text;
               this.isResultNull = false;
+              this.isRecognized = true;
             }
             // this.textDisplay ="";
-            this.isRecognized = true;
+            
             this.dismissLoading();
             resolve(res);
           }, err => {
