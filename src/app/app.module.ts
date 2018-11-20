@@ -15,6 +15,7 @@ import { Network } from '@ionic-native/network';
 // import { ActionSheet, ActionSheetOptions } from '@ionic-native/action-sheet';
 import { SocialSharing } from '@ionic-native/social-sharing';
 import { File } from '@ionic-native/file';
+import { GoogleAnalytics } from '@ionic-native/google-analytics';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import { File } from '@ionic-native/file';
     Base64,
     Network,
     SocialSharing,
-    File
+    File,
+    GoogleAnalytics
     
     
   ]

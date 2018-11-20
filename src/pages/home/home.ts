@@ -11,6 +11,7 @@ import { ToastController, LoadingController, App} from 'ionic-angular';
 import { ActionSheet, ActionSheetOptions } from '@ionic-native/action-sheet';
 import { SocialSharing } from '@ionic-native/social-sharing';
 import { File } from '@ionic-native/file';
+import { GoogleAnalytics } from '@ionic-native/google-analytics';
 
  
 @Component({
@@ -44,9 +45,12 @@ export class HomePage {
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private socialSharing: SocialSharing,
-              private file: File
+    private file: File,
+    private ga: GoogleAnalytics
 
   ) {
+    this.ga.trackView("Khmer OCR recognition");
+
     this.textDisplay = "Please input the image of Khmer Limon or Unicode text.";
     this.cropperOptions = {
       dragMode: 'crop',
@@ -57,8 +61,6 @@ export class HomePage {
       scalable: true,
       autoCropArea: 0.8,
     };
-
-    
   }
  
   captureImage() {
