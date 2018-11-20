@@ -14,6 +14,7 @@ import { Base64 } from '@ionic-native/base64';
 import { Network } from '@ionic-native/network';
 // import { ActionSheet, ActionSheetOptions } from '@ionic-native/action-sheet';
 import { SocialSharing } from '@ionic-native/social-sharing';
+import { File } from '@ionic-native/file';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { SocialSharing } from '@ionic-native/social-sharing';
     ImagePicker,
     Base64,
     Network,
-    SocialSharing
+    SocialSharing,
+    File
     
     
   ]

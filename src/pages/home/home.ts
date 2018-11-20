@@ -10,6 +10,7 @@ import { Network } from '@ionic-native/network';
 import { ToastController, LoadingController, App} from 'ionic-angular';
 import { ActionSheet, ActionSheetOptions } from '@ionic-native/action-sheet';
 import { SocialSharing } from '@ionic-native/social-sharing';
+import { File } from '@ionic-native/file';
 
  
 @Component({
@@ -42,7 +43,8 @@ export class HomePage {
     private network: Network,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
-    private socialSharing: SocialSharing
+    private socialSharing: SocialSharing,
+              private file: File
 
   ) {
     this.textDisplay = "Please input the image of Khmer Limon or Unicode text.";
@@ -60,7 +62,7 @@ export class HomePage {
   }
  
   captureImage() {
-    this.presentLoadingNoDismiss('Loading photo...');
+
     this.myImage = "";
     const options: CameraOptions = {
       quality: 100,
@@ -71,9 +73,31 @@ export class HomePage {
     }
  
     this.camera.getPicture(options).then((imageData) => {
+      this.presentLoadingNoDismiss('Loading photo...');
+      console.log('photo from camera = '+imageData);
       this.myImage = 'data:image/jpeg;base64,' + imageData;
       this.dismissLoading();
+    }, function(err) {
+      // this.dismissLoading();
+      console.log(JSON.stringify(err));
+
     });
+  }
+
+  async captureImageNew(useAlbum: boolean) {
+    const options: CameraOptions = {
+      quality: 30,
+      destinationType: this.camera.DestinationType.DATA_URL,
+      encodingType: this.camera.EncodingType.JPEG,
+      mediaType: this.camera.MediaType.PICTURE,
+      ...useAlbum ? {sourceType: this.camera.PictureSourceType.SAVEDPHOTOALBUM} : {}
+    }
+
+    const imageData = await this.camera.getPicture(options);
+    //console.log('================> Image: ',imageData);
+    this.myImage = 'data:image/jpeg;base64,' + imageData;
+
+
   }
 
   openImagePicker() {
@@ -84,11 +108,18 @@ export class HomePage {
     this.presentLoadingNoDismiss('Loading photo...');
     this.imagePicker.getPictures(options)
       .then((results) => {
-        this.base64.encodeFile(results[0]).then((base64File: string) => {
+        let path = this.file.tempDirectory;
+        console.log('tmp path : '+path);
+        console.log('photo from gallery : '+results);
+      let filePath: string ='file://'+results;
+        console.log('filePath : '+filePath);
+        this.base64.encodeFile(filePath).then((base64File: string) => {
+          alert(results);
           this.myImage = this.sanitizer.bypassSecurityTrustUrl(base64File);
           this.dismissLoading();
         }, (err) => {
           console.log(err);
+          alert('error encode base 64 image');
         });
       }, (err) => { console.log(err) });
   }
@@ -248,7 +279,7 @@ export class HomePage {
     presentToast(msg: string) {
       let toastObj = this.toastCtrl.create({
         message: msg,
-        position: "bottom",
+        position: "middle",
         duration: 4000
       });
       toastObj.present();
